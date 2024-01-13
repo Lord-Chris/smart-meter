@@ -12,6 +12,11 @@ class ReadingModel {
     required this.time,
   });
 
+  ReadingModel.initial()
+      : current = 0,
+        voltage = 0,
+        time = DateTime.now();
+
   Map<String, dynamic> toMap() {
     return {
       'current': current,
@@ -40,12 +45,12 @@ class ReadingModel {
 }
 
 final mockReadings = List.generate(
-  100,
+  10000000,
   (index) => ReadingModel(
     current: Random().nextDouble(),
     voltage: Random().nextInt(40) + 200,
     time: DateTime.now().subtract(
-      Duration(minutes: index * Random().nextInt(10)),
+      Duration(seconds: index * Random().nextInt(10)),
     ),
   ),
 );

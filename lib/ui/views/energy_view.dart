@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_meter/core/extensions/context_extenstion.dart';
+import 'package:smart_meter/models/energy_model.dart';
 import 'package:smart_meter/models/reading_model.dart';
 import 'package:smart_meter/ui/shared/app_constants.dart';
 import 'package:smart_meter/ui/shared/spacing.dart';
@@ -18,7 +19,6 @@ class EnergyView extends StatefulWidget {
 
 class _HomePageSView extends State<EnergyView> {
   final freq = [
-    'Min',
     'Hour',
     'Day',
     'Week',
@@ -26,12 +26,93 @@ class _HomePageSView extends State<EnergyView> {
     'Year',
   ];
 
-  String selectedFreq = 'Min';
+  String selectedFreq = 'Hour';
 
   final controller = TextEditingController(text: '1');
 
+  Duration _getDuration(String freq) {
+    switch (freq) {
+      case 'Hour':
+        return const Duration(hours: 1);
+      case 'Day':
+        return const Duration(days: 1);
+      case 'Week':
+        return const Duration(days: 7);
+      case 'Month':
+        return const Duration(days: 30);
+      case 'Year':
+        return const Duration(days: 365);
+      default:
+        return const Duration(minutes: 1);
+    }
+  }
+
+  int _getDivisions(String freq) {
+    switch (freq) {
+      case 'Hour':
+        return 60;
+      case 'Day':
+        return 24;
+      case 'Week':
+        return 7;
+      case 'Month':
+        return 30;
+      case 'Year':
+        return 12;
+      default:
+        return 60;
+    }
+  }
+
+  bool _sortData(String freq, int division, ReadingModel reading) {
+    switch (freq) {
+      case 'Hour':
+        return reading.time.hour == division;
+      case 'Day':
+        return reading.time.day == division;
+      case 'Week':
+        return reading.time.weekday == division;
+      case 'Month':
+        return reading.time.month == division;
+      case 'Year':
+        return reading.time.year == division;
+      default:
+        return reading.time.hour == division;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final selectedReadings = [...mockReadings].where((element) {
+      return element.time
+          .isAfter(DateTime.now().subtract(_getDuration(selectedFreq)));
+    }).toList();
+
+    final indexes =
+        List.generate(_getDivisions(selectedFreq), (index) => index);
+
+    final sortedReadings = {
+      for (var item in indexes)
+        item.toString(): selectedReadings
+            .where((e) => _sortData(selectedFreq, item, e))
+            .fold(
+              EnergyModel.initial(),
+              (previousValue, element) => EnergyModel(
+                current: previousValue.current + element.current,
+                voltage: previousValue.voltage + element.voltage,
+                duration: _getDuration(selectedFreq),
+              ),
+            ),
+    };
+
+    final totalReading = selectedReadings.fold<EnergyModel>(
+      EnergyModel.initial(),
+      (previousValue, element) => EnergyModel(
+        current: previousValue.current + element.current,
+        voltage: previousValue.voltage + element.voltage,
+        duration: _getDuration(selectedFreq),
+      ),
+    );
     return Scaffold(
       drawer: const AppDrawer(currentPageIndex: 1),
       appBar: AppBar(
@@ -90,7 +171,7 @@ class _HomePageSView extends State<EnergyView> {
             ),
           ),
           Spacing.vertRegular(),
-          CurrentReading(reading: mockReadings.last),
+          EnergyReading(reading: totalReading),
           Spacing.vertRegular(),
           Card(
             shape: RoundedRectangleBorder(
@@ -102,7 +183,7 @@ class _HomePageSView extends State<EnergyView> {
               child: Column(
                 children: [
                   Text(
-                    'Current Cost of Electricity',
+                    'Cost of Electricity over the last $selectedFreq',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Spacing.vertSmall(),
@@ -117,7 +198,9 @@ class _HomePageSView extends State<EnergyView> {
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             Text(
-                              '0.21',
+                              (totalReading.energy *
+                                      double.parse(controller.text))
+                                  .toStringAsFixed(3),
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
@@ -159,27 +242,7 @@ class _HomePageSView extends State<EnergyView> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Spacing.vertSmall(),
-                  SizedBox(
-                    height: 37.r,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: freq.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        final filter = freq[index];
-                        return _buildFilterItem(
-                          context,
-                          filter,
-                          isActive: filter == selectedFreq,
-                          onTap: () {
-                            setState(() => selectedFreq = filter);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  Spacing.vertSmall(),
-                  const EnergyChart(),
+                  EnergyChart(freq: selectedFreq, readings: sortedReadings),
                 ],
               ),
             ),
@@ -222,9 +285,9 @@ class _HomePageSView extends State<EnergyView> {
   }
 }
 
-class CurrentReading extends StatelessWidget {
-  final ReadingModel reading;
-  const CurrentReading({
+class EnergyReading extends StatelessWidget {
+  final EnergyModel reading;
+  const EnergyReading({
     Key? key,
     required this.reading,
   }) : super(key: key);
@@ -241,7 +304,7 @@ class CurrentReading extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              'Current Reading',
+              'Total Energy Reading',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             Spacing.vertSmall(),
@@ -277,17 +340,32 @@ class CurrentReading extends StatelessWidget {
                     ],
                   ),
                 ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Power (kW)',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      Text(
+                        reading.powerString,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Power (W)',
+                  'Energy (kWh)',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Text(
-                  reading.powerString,
+                  reading.energyInExponential,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
