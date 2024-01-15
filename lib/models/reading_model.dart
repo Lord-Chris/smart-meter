@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 
-class ReadingModel {
+import 'package:equatable/equatable.dart';
+
+class ReadingModel extends Equatable {
   final num current;
   final num voltage;
   final DateTime time;
@@ -42,15 +44,18 @@ class ReadingModel {
   String get powerString => power.toStringAsFixed(2);
   String get currentString => current.toStringAsFixed(2);
   String get voltageString => voltage.toStringAsFixed(2);
+
+  @override
+  List<Object> get props => [current, voltage, time];
 }
 
 final mockReadings = List.generate(
-  10000000,
+  1000,
   (index) => ReadingModel(
     current: Random().nextDouble(),
     voltage: Random().nextInt(40) + 200,
     time: DateTime.now().subtract(
-      Duration(seconds: index * Random().nextInt(10)),
+      Duration(minutes: index * Random().nextInt(10)),
     ),
   ),
 );
