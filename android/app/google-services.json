@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "681198505375",
+    "firebase_url": "https://weatherstation-957a1-default-rtdb.firebaseio.com",
+    "project_id": "weatherstation-957a1",
+    "storage_bucket": "weatherstation-957a1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681198505375:android:7955aa18edb9029efa41aa",
+        "android_client_info": {
+          "package_name": "com.elect.hospital_record"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADJn33_iAQb0RxoW3tcV-mHLjBPaCwwfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681198505375:android:fadf258951720da8fa41aa",
+        "android_client_info": {
+          "package_name": "com.example.frfid_doorlock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADJn33_iAQb0RxoW3tcV-mHLjBPaCwwfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681198505375:android:8bef547b224538c1fa41aa",
+        "android_client_info": {
+          "package_name": "com.example.smart_meter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADJn33_iAQb0RxoW3tcV-mHLjBPaCwwfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681198505375-t07lknrp4ei09lifm03kjarkdd8p05fd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_meter/core/extensions/context_extenstion.dart';
 import 'package:smart_meter/models/reading_model.dart';
+import 'package:smart_meter/services/rtdb_service/rtdb_service.dart';
 import 'package:smart_meter/ui/shared/app_constants.dart';
 import 'package:smart_meter/ui/shared/spacing.dart';
 import 'package:smart_meter/ui/views/drawer.dart';
@@ -16,8 +17,10 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomePageSView extends State<HomeView> {
+  final RTDBService _rtdbService = RTDBService();
   @override
   Widget build(BuildContext context) {
+    _rtdbService.getData();
     final sortedReadings =
         ([...mockReadings]..sort((a, b) => b.power.compareTo(a.power)));
     return Scaffold(
