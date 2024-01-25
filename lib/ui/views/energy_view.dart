@@ -7,6 +7,7 @@ import 'package:smart_meter/models/reading_model.dart';
 import 'package:smart_meter/ui/shared/app_constants.dart';
 import 'package:smart_meter/ui/shared/spacing.dart';
 
+import '../../services/rtdb_service/rtdb_service.dart';
 import 'chart.dart';
 import 'drawer.dart';
 
@@ -18,6 +19,7 @@ class EnergyView extends StatefulWidget {
 }
 
 class _HomePageSView extends State<EnergyView> {
+  final RTDBService _rtdbService = RTDBService();
   final freq = [
     'Hour',
     'Day',
@@ -83,36 +85,6 @@ class _HomePageSView extends State<EnergyView> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedReadings = [...mockReadings].where((element) {
-      return element.time
-          .isAfter(DateTime.now().subtract(_getDuration(selectedFreq)));
-    }).toList();
-
-    final indexes =
-        List.generate(_getDivisions(selectedFreq), (index) => index);
-
-    final sortedReadings = {
-      for (var item in indexes)
-        item.toString(): selectedReadings
-            .where((e) => _sortData(selectedFreq, item, e))
-            .fold(
-              EnergyModel.initial(),
-              (previousValue, element) => EnergyModel(
-                current: previousValue.current + element.current,
-                voltage: previousValue.voltage + element.voltage,
-                duration: _getDuration(selectedFreq),
-              ),
-            ),
-    };
-
-    final totalReading = selectedReadings.fold<EnergyModel>(
-      EnergyModel.initial(),
-      (previousValue, element) => EnergyModel(
-        current: previousValue.current + element.current,
-        voltage: previousValue.voltage + element.voltage,
-        duration: _getDuration(selectedFreq),
-      ),
-    );
     return Scaffold(
       drawer: const AppDrawer(currentPageIndex: 1),
       appBar: AppBar(
@@ -163,6 +135,7 @@ class _HomePageSView extends State<EnergyView> {
           const Text('Cost of 1 unit of Electricity:'),
           TextField(
             controller: controller,
+            onChanged: (value) => setState(() {}),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: const InputDecoration(
@@ -171,82 +144,155 @@ class _HomePageSView extends State<EnergyView> {
             ),
           ),
           Spacing.vertRegular(),
-          EnergyReading(reading: totalReading),
-          Spacing.vertRegular(),
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            elevation: 3,
-            child: Padding(
-              padding: REdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Cost of Electricity over the last $selectedFreq',
-                    style: Theme.of(context).textTheme.titleMedium,
+          StreamBuilder<List<ReadingModel>>(
+              stream: _rtdbService.streamData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('An error occured'),
+                  );
+                }
+
+                final data = snapshot.data;
+
+                if (data == null || data.isEmpty) {
+                  return const Center(
+                    child: Text('No data available'),
+                  );
+                }
+
+                final selectedReadings = [...data].where((element) {
+                  return element.time.isAfter(
+                      DateTime.now().subtract(_getDuration(selectedFreq)));
+                }).toList();
+
+                final indexes = List.generate(
+                    _getDivisions(selectedFreq), (index) => index);
+
+                final sortedReadings = {
+                  for (var item in indexes)
+                    item.toString(): selectedReadings
+                        .where((e) => _sortData(selectedFreq, item, e))
+                        .fold(
+                          EnergyModel.initial(),
+                          (previousValue, element) => EnergyModel(
+                            current: previousValue.current + element.current,
+                            voltage: previousValue.voltage + element.voltage,
+                            duration: _getDuration(selectedFreq),
+                          ),
+                        ),
+                };
+
+                final totalReading = selectedReadings.fold<EnergyModel>(
+                  EnergyModel.initial(),
+                  (previousValue, element) => EnergyModel(
+                    current: previousValue.current + element.current,
+                    voltage: previousValue.voltage + element.voltage,
+                    duration: _getDuration(selectedFreq),
                   ),
-                  Spacing.vertSmall(),
-                  Row(
-                    children: [
-                      Expanded(
+                );
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    EnergyReading(reading: totalReading),
+                    Spacing.vertRegular(),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 3,
+                      child: Padding(
+                        padding: REdgeInsets.all(8.0),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              'Cost of Electricity',
-                              style: Theme.of(context).textTheme.titleSmall,
+                              'Cost of Electricity over the last $selectedFreq',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            Text(
-                              (totalReading.energy *
-                                      double.parse(controller.text))
-                                  .toStringAsFixed(3),
-                              style: Theme.of(context).textTheme.bodySmall,
+                            Spacing.vertSmall(),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Cost of Electricity',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall,
+                                      ),
+                                      Text(
+                                        (totalReading.energy *
+                                                double.parse(controller.text))
+                                            .toStringAsFixed(3),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Currency',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall,
+                                      ),
+                                      Text(
+                                        'NGN',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      Expanded(
+                    ),
+                    Spacing.vertRegular(),
+                    Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: REdgeInsets.all(8.0),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              'Currency',
-                              style: Theme.of(context).textTheme.titleSmall,
+                              'Energy Consumption Chart in kWh',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            Text(
-                              'NGN',
-                              style: Theme.of(context).textTheme.bodySmall,
+                            Spacing.vertSmall(),
+                            EnergyChart(
+                              freq: selectedFreq,
+                              readings: sortedReadings,
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Spacing.vertRegular(),
-          Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: REdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Energy Consumption Chart in kWh',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Spacing.vertSmall(),
-                  EnergyChart(freq: selectedFreq, readings: sortedReadings),
-                ],
-              ),
-            ),
-          ),
+                    ),
+                  ],
+                );
+              }),
         ],
       ),
     );
