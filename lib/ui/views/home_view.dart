@@ -18,11 +18,9 @@ class HomeView extends StatefulWidget {
 
 class _HomePageSView extends State<HomeView> {
   final RTDBService _rtdbService = RTDBService();
+
   @override
   Widget build(BuildContext context) {
-    _rtdbService.getData();
-    final sortedReadings =
-        ([...mockReadings]..sort((a, b) => b.power.compareTo(a.power)));
     return Scaffold(
       drawer: const AppDrawer(currentPageIndex: 0),
       appBar: AppBar(
@@ -45,50 +43,78 @@ class _HomePageSView extends State<HomeView> {
           ),
         ),
       ),
-      body: ListView(
-        padding: REdgeInsets.all(16),
-        children: [
-          CurrentReading(
-            label: 'Current Reading',
-            reading: mockReadings.last,
-          ),
-          Spacing.vertRegular(),
-          CurrentReading(
-            label: 'Maximum Reading',
-            reading: sortedReadings.first,
-          ),
-          Spacing.vertRegular(),
-          CurrentReading(
-            label: 'Minimum Reading',
-            reading: sortedReadings.last,
-          ),
-          Spacing.vertRegular(),
-          Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: REdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Reading Comparison',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Spacing.vertSmall(),
-                  PowerComparisonChart(
-                    readings: [
-                      sortedReadings.last,
-                      mockReadings.last,
-                      sortedReadings.first,
+      body: FutureBuilder<List<ReadingModel>>(
+        future: _rtdbService.getData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: context.tTheme.bodyMedium,
+              ),
+            );
+          }
+          final data = snapshot.data;
+          if (data == null) {
+            return Center(
+              child: Text(
+                'No data found',
+                style: context.tTheme.bodyMedium,
+              ),
+            );
+          }
+          final sortedReadings =
+              ([...data]..sort((a, b) => b.power.compareTo(a.power)));
+          final latestReading = data.last;
+          return ListView(
+            padding: REdgeInsets.all(16),
+            children: [
+              CurrentReading(
+                label: 'Current Reading',
+                reading: latestReading,
+              ),
+              Spacing.vertRegular(),
+              CurrentReading(
+                label: 'Maximum Reading',
+                reading: sortedReadings.first,
+              ),
+              Spacing.vertRegular(),
+              CurrentReading(
+                label: 'Minimum Reading',
+                reading: sortedReadings.last,
+              ),
+              Spacing.vertRegular(),
+              Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: REdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Reading Comparison',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Spacing.vertSmall(),
+                      PowerComparisonChart(
+                        readings: [
+                          sortedReadings.last,
+                          latestReading,
+                          sortedReadings.first,
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

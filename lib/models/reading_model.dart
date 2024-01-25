@@ -23,7 +23,7 @@ class ReadingModel extends Equatable {
     return {
       'current': current,
       'voltage': voltage,
-      'time': time.millisecondsSinceEpoch,
+      'time': time.millisecondsSinceEpoch ~/ 1000,
     };
   }
 
@@ -31,7 +31,7 @@ class ReadingModel extends Equatable {
     return ReadingModel(
       current: map['current'] ?? 0,
       voltage: map['voltage'] ?? 0,
-      time: DateTime.fromMillisecondsSinceEpoch(map['time']),
+      time: DateTime.fromMillisecondsSinceEpoch(map['time'] * 1000),
     );
   }
 

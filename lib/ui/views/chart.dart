@@ -78,7 +78,7 @@ class PowerComparisonChart extends StatelessWidget {
             ),
           ),
           minY: 0,
-          maxY: (readings.last.power.toDouble() + 30).ceilToDouble(),
+          maxY: (readings.last.power.toDouble() * 1.1).ceilToDouble(),
           barGroups: readings
               .map(
                 (reading) => BarChartGroupData(
