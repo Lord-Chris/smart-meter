@@ -43,8 +43,8 @@ class _HomePageSView extends State<HomeView> {
           ),
         ),
       ),
-      body: FutureBuilder<List<ReadingModel>>(
-        future: _rtdbService.getData(),
+      body: StreamBuilder<List<ReadingModel>>(
+        stream: _rtdbService.streamData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
