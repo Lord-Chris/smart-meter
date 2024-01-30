@@ -28,7 +28,7 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: const Text('Power - I & V'),
+            title: const Text('Power Readings - I & V'),
             onTap: () {
               Navigator.pop(context);
               if (currentPageIndex != 0) {
@@ -41,7 +41,7 @@ class AppDrawer extends StatelessWidget {
           ),
           Divider(color: context.cScheme.primary),
           ListTile(
-            title: const Text('Energy'),
+            title: const Text('Energy Readings'),
             onTap: () {
               Navigator.pop(context);
               if (currentPageIndex != 1) {

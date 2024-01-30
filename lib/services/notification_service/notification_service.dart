@@ -4,6 +4,13 @@ import 'package:smart_meter/services/notification_service/i_notification_service
 class NotificationService extends INotificationService {
   final _notification = AwesomeNotifications();
 
+  static NotificationService? _instance;
+
+  static NotificationService get instance {
+    _instance ??= NotificationService();
+    return _instance!;
+  }
+
   @override
   Future<void> init() async {
     await _notification.initialize(

@@ -4,9 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_meter/ui/shared/app_constants.dart';
 import 'package:smart_meter/ui/views/home_view.dart';
 
+import 'services/notification_service/notification_service.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await NotificationService.instance.init();
   runApp(const MyApp());
 }
 
