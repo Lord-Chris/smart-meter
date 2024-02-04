@@ -21,7 +21,7 @@ class RTDBService extends IRTDBService {
         .toList();
   }
 
-  Stream<List<ReadingModel>> streamData() {
+  Stream<List<ReadingModel>> streamPower() {
     final stream = _database.ref('Smart_Meter').child('data').onValue;
 
     return stream.transform(
@@ -34,6 +34,7 @@ class RTDBService extends IRTDBService {
           final parsedValues = values
               .map((e) => ReadingModel.fromMap(e.cast<String, dynamic>()))
               .toList();
+          parsedValues.sort((a, b) => a.time.compareTo(b.time));
           OutlierAnalyzer analyzer = OutlierAnalyzer(
             [...parsedValues.reversed.toList().sublist(1).reversed],
           );

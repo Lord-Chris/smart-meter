@@ -44,7 +44,7 @@ class _HomePageSView extends State<HomeView> {
         ),
       ),
       body: StreamBuilder<List<ReadingModel>>(
-        stream: _rtdbService.streamData(),
+        stream: _rtdbService.streamPower(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -68,14 +68,13 @@ class _HomePageSView extends State<HomeView> {
           }
           final sortedReadings =
               ([...data]..sort((a, b) => b.power.compareTo(a.power)));
-          final latestReading =
-              ([...data]..sort((a, b) => b.time.compareTo(a.time))).first;
+
           return ListView(
             padding: REdgeInsets.all(16),
             children: [
               CurrentReading(
                 label: 'Current Reading',
-                reading: latestReading,
+                reading: data.last,
               ),
               Spacing.vertRegular(),
               CurrentReading(
@@ -105,7 +104,7 @@ class _HomePageSView extends State<HomeView> {
                       PowerComparisonChart(
                         readings: [
                           sortedReadings.last,
-                          latestReading,
+                          data.last,
                           sortedReadings.first,
                         ],
                       ),

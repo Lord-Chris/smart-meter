@@ -14,7 +14,7 @@ class NotificationService extends INotificationService {
   @override
   Future<void> init() async {
     await _notification.initialize(
-      'resource://drawable/res_app_icon',
+      null,
       [
         NotificationChannel(
           channelKey: 'smart_meter',
