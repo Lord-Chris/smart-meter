@@ -1,50 +1,26 @@
-import 'dart:convert';
+import 'package:equatable/equatable.dart';
 
-class EnergyModel {
-  final num current;
-  final num voltage;
-  final Duration duration;
+class EnergyModel extends Equatable {
+  final num power; // in Watts
+  final Duration interval; 
 
   const EnergyModel({
-    required this.current,
-    required this.voltage,
-    required this.duration,
+    required this.power,
+    required this.interval,
   });
 
-  EnergyModel.initial()
-      : current = 0,
-        voltage = 0,
-        duration = Duration.zero;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'current': current,
-      'voltage': voltage,
-      'duration': duration.inMicroseconds,
-    };
-  }
-
-  factory EnergyModel.fromMap(Map<String, dynamic> map) {
-    return EnergyModel(
-      current: map['current'] ?? 0,
-      voltage: map['voltage'] ?? 0,
-      duration: Duration(microseconds: map['duration']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory EnergyModel.fromJson(String source) =>
-      EnergyModel.fromMap(json.decode(source));
+  const EnergyModel.initial()
+      : power = 0,
+        interval = Duration.zero;
 
   /// Power in Watts
-  num get power => (current * voltage) / 1000;
   String get powerString => power.toStringAsFixed(2);
-  String get currentString => current.toStringAsFixed(2);
-  String get voltageString => voltage.toStringAsFixed(2);
 
   /// Energy in kWh
-  num get energy => power * duration.inHours;
+  num get energy => power * interval.inMinutes / 60 / 1000;
   String get energyString => energy.toStringAsFixed(2);
   String get energyInExponential => energy.toStringAsExponential(2);
+
+  @override
+  List<Object> get props => [power, interval];
 }
