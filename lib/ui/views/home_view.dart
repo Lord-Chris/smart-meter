@@ -68,7 +68,8 @@ class _HomePageSView extends State<HomeView> {
           }
           final sortedReadings =
               ([...data]..sort((a, b) => b.power.compareTo(a.power)));
-          final latestReading = data.last;
+          final latestReading =
+              ([...data]..sort((a, b) => b.time.compareTo(a.time))).first;
           return ListView(
             padding: REdgeInsets.all(16),
             children: [

@@ -22,7 +22,7 @@ class RTDBService extends IRTDBService {
   }
 
   Stream<List<ReadingModel>> streamData() {
-    final stream = _database.ref('Smart_Meter').onChildAdded;
+    final stream = _database.ref('Smart_Meter').child('data').onValue;
 
     return stream.transform(
       StreamTransformer<DatabaseEvent, List<ReadingModel>>.fromHandlers(
