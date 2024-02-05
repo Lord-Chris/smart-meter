@@ -36,13 +36,6 @@ class RTDBService extends IRTDBService {
               .map((e) => ReadingModel.fromMap(e.cast<String, dynamic>()))
               .toList();
           parsedValues.sort((a, b) => a.time.compareTo(b.time));
-          OutlierAnalyzer analyzer = OutlierAnalyzer(
-            [...parsedValues.reversed.toList().sublist(1).reversed],
-          );
-          final isStrange = analyzer.isOutlier(parsedValues.last);
-          if (isStrange) {
-            _notification.showNotification();
-          }
           sink.add(parsedValues);
         },
       ),
@@ -76,6 +69,14 @@ class RTDBService extends IRTDBService {
             );
 
             energyValues.add(energy);
+          }
+
+          OutlierAnalyzer analyzer = OutlierAnalyzer(
+            [...energyValues.reversed.toList().sublist(1).reversed],
+          );
+          final isStrange = analyzer.isOutlier(energyValues.last);
+          if (isStrange) {
+            _notification.showNotification();
           }
 
           sink.add(energyValues);

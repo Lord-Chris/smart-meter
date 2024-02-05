@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:smart_meter/models/reading_model.dart';
+import 'package:smart_meter/models/energy_model.dart';
 import 'package:statistics/statistics.dart';
 
 // void dmain() {
@@ -21,7 +21,7 @@ import 'package:statistics/statistics.dart';
 // }
 
 class OutlierAnalyzer {
-  List<ReadingModel> data;
+  List<EnergyModel> data;
   late double mean;
   late double stdDev;
   late double zScoreThreshold;
@@ -57,13 +57,13 @@ class OutlierAnalyzer {
   }
 
   /// Adds a new data point to the list and re-analyzes the data
-  void addDataPoint(ReadingModel value) {
+  void addDataPoint(EnergyModel value) {
     data.add(value);
     analyzeData();
   }
 
   /// Returns true if the value is an outlier
-  bool isOutlier(ReadingModel value) {
+  bool isOutlier(EnergyModel value) {
     double zScore = (value.power - mean) / stdDev;
     return zScore.abs() > zScoreThreshold;
   }

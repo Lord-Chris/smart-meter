@@ -26,6 +26,7 @@ class NotificationService extends INotificationService {
         ),
       ],
     );
+    await _notification.requestPermissionToSendNotifications();
   }
 
   @override
